@@ -1,0 +1,72 @@
+//copyright Carauleanu Valentin Gabriel 311CA
+
+Lucrand cu un numar mare de functii, am luat decizia
+de a crea 3 biblioteci statice: 
+	-> dynamic_alloc.h , formata de functii de alocare
+dinamica, realocare si eliberare de memorie
+	-> aux_functions.h , formata din functii care
+vizeaza functii auxiliare precum cele de citire a 
+comenzilor sau de prelucrare a matricelor 
+	-> editing_tools.h, formata din functii care vizeaza
+operatiile principale ale programului image_editor
+si utilizeaza functiile din celelalte 2 biblioteci 
+
+Avand in vedere lucrul cu imagini ce presupune retinerea in
+memorie a unor matrice de dimensiuni foarte mari, atat structurile
+imaginilor, cat si matricele acestora vor fi alocate dinamic, fiind
+eliberate din memorie la citirea unei noi imagini. De asemenea, am definit
+2 tipuri de date: image_t si rotate. image_t va retine
+informatiile aferente unei imagini, iar in cazul unei imagini RGB
+vor fi utilizate 3 matrice pentru o mai usoara prelucrare ulterioara
+a acestora. Rotate este utilizat pentru a defini pointerul
+functiilor rotate_left si rotate_right.
+
+Pentru o functie main a programului mai organizata, am luat decizia de a
+transforma comanda primita intr-o valoarea numerica ce va fi utilizata
+ulerior intr-o instructiune switch.
+
+In cadrul operatiei load, inainte de citirea propriu-zisa din fisier
+vom sterge din memorie eventuala imaginea existenta si vom initializa
+pointerul image_t cu valoarea NULL pentru a putea testa ulterior succesul
+operatiei. In cadrul citirii, utilizam functia comment_case
+pentru a ignora liniile cu comentarii si a citi datele descriptive
+ale imaginii. In cazul unui fisier binar, retinem poztia actuala a
+cursorului folosind fgetpos, inchidem fisierul si il redeschidem sub
+forma "rb", setand curosul la pozitia initiala utilizand fsetpos.
+
+In cadrul operatiilor SELECT vom utiliza un vector de coordonate ce
+memoreaza valorile x1 x2 y1 y2, unde x reprezinta latimea imaginii, iar
+y inaltimea imaginii. Ulerior operatiilor ROTATE (in cazul rotirii complete),
+CROP si LOAD se va aplica o selectie completa a imaginii.
+
+In cadrul operatiei CROP se va crea o noua imagine, utilizand submatricea
+delimitata de vectorul de coordonate. Daca selectia este completa,
+operatia CROP nu va avea nici un efect pentru a nu irosi resurse creand o
+noua imagine noua identica cu cea veche.
+
+In cadrul operatiilor APPLY vor fi vizate doar imaginile colore. Se va
+parcurge selectia imaginii delimitata de vectorul de coordonate astfel:
+elementele aflate la marginea matrcelor sunt ignorate, iar elementele din
+interior sunt modificate folosind matricea kernel si o submatrice din
+matricea imaginii de dim 3 * 3 centrata in elementul curent. Pentru o
+modularizare eficienta se va folosi aceeasi functie de apply (numita apy)
+pentru orice tip de efect, diferenta fiind kernelul trimis ca parametru.
+
+In cadrul operatiei SAVE, fisierele binare trebuie sa contina atat
+elemente ascii, cat si binare. Din acest motiv, intial vom deschide
+fisierul "rt" pentru a scrie elementele descriptive ale imaginii,
+inchidem fisierul salvand pozitia cursorului cu fgetpos, il
+redeschidem ca "rb" si folosind fgetpos revenim la pozitia initala.
+Ulterior vom scrie binar in fisier matricele imaginii.
+
+Pentru operatia ROTATE, vom folosi rotiri succesive de 90 de
+grade pentru a obtine orice tip de rotatie permisa. Numarul de
+rotiri este dat de rezulatul impartii abs(unghi de roatie) / 90.
+Daca selectia este completa, vom crea o noua structura image_t
+ce contine noua imagine rotita si posibilele noi dimensiuni ale
+acesteia. Daca selectia nu este completa, copiem submatricea
+selectata intr-o matrice auxiliara ce va fi ulerior rotita. La final,
+vom suprascrie submatricea selectata din imagine cu valorile matrici
+auxiliare. Daca rotirea s-a desfasurat pentru o
+selectie completa, aplicam operatia SELECT ALL.
+
